@@ -1,0 +1,48 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core" >
+	<Dialog title="Selection Screen">
+		<!--<Label text=" Plant"/>-->
+		<Input id="PlantInput" maxLength="4" type="Text" placeholder="Enter Plant..." showSuggestion="true" liveChange="handleUserInput" suggest="handleSuggest" suggestionItems="{path: '/getPlantsSet' , suspended: true}">
+			<suggestionItems>
+				<core:ListItem text="{Werks}" additionalText="{Name1}"/>
+			</suggestionItems>
+		</Input>
+		<Input id="sLocInput" maxLength="4" type="Text" placeholder="Enter Storage Location..." showSuggestion="true" liveChange="handleUserInput" suggest="handleSuggestLgort" suggestionItems="{path: '/getStorageLocationsSet' , suspended: true}">
+			<suggestionItems>
+				<core:ListItem text="{Lgort}" additionalText="{Lgobe}"/>
+			</suggestionItems>
+		</Input>
+		<HBox>
+			<VBox>
+				<Label text="Transaction Type"/>
+				<RadioButtonGroup id="RG_Type" valueState="Error" class="sapUiMediumMarginBottom">
+					<buttons>
+						<RadioButton id="rbtType1" text="Goods Issue"/>
+						<RadioButton id="rbtType2" text="Goods Return"/>
+					</buttons>
+				</RadioButtonGroup>
+			</VBox>
+		</HBox>
+		<HBox>
+			<VBox>
+				<Label text="Mode"/>
+				<RadioButtonGroup id="RG_Mode" valueState="Error" class="sapUiMediumMarginBottom">
+					<buttons>
+						<RadioButton id="rbtMode1" text="Pick List"/>
+						<RadioButton id="rbtMode2" text="Delivery (INTRA STO/ INTER STO/ RM SALE)"/>
+						<RadioButton id="rbtMode3" text="Stock Transport Order (Inter-Company)" visible="false"/>
+						<!--<RadioButton id="rbtMode2" text="Stock Transport Order (Intra-Company)"/>-->
+						<!--<RadioButton id="rbtMode3" text="Stock Transport Order (Inter-Company)" visible="false"/>-->
+						<RadioButton id="rbtMode4" text="Other Movements"/>
+					</buttons>
+				</RadioButtonGroup>
+			</VBox>
+		</HBox>
+
+		<Label text="Posting Date" labelFor="DateInput"/>
+		<DatePicker id="DateInput" displayFormat="long" change="handleChange" class="sapUiSmallMarginBottom" valueState="Error" />
+  
+		<buttons>
+			<Button id="btn_Confirm" text="&gt;&gt;&gt;" press="onConfirm" type="Accept"/>
+			</buttons>
+		</Dialog>
+	</core:FragmentDefinition>

@@ -1,0 +1,16 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+  <Dialog id="rDialog" title="Reason Movement">
+    <VBox>
+      <Label text="  Movement Reason" labelFor="mReasonList" />
+      <Select id="mReasonList" forceSelection="false" width="100%" valueState="Error" change="updateReason"></Select>
+    </VBox>
+    <!-- <VBox>
+        <Label text="  Barcode" labelFor="valChangeBarcode" />
+        <Input id="valChangeBarcode" change="" type="Text" placeholder="Barcode" editable="false"></Input>
+    </VBox> -->
+    <buttons>
+      <Button id="btn_Submit" text="OK" press="onReasonSubmit" enabled="false" />
+      <Button id="btn_Cancel" text="Cancel" press="onReasonCancel" />
+    </buttons>
+    </Dialog>
+  </core:FragmentDefinition>

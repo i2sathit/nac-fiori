@@ -1,0 +1,26 @@
+<core:FragmentDefinition xmlns:l="sap.ui.layout" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
+	<Dialog title="Substitutable Barcodes">
+		<!--<List id="ProductList" items="{/ProductCollection}" mode="SingleSelect" includeItemInSelection="true">-->
+		<!--	<StandardListItem title="{Name}" description="{ProductId}" icon="{ProductPicUrl}" iconDensityAware="false" iconInset="false"/>-->
+		<!--</List>-->
+		<List id="PickListDataList" mode="SingleSelect" selectionChange="onSelectionChange" includeItemInSelection="true" class="sapUiResponsiveMargin" width="auto" 
+			items="{ path : '/', sorter : { path : 'HeaderKey', group : true } }">
+			<items>
+				<ObjectListItem title="{Barcode}"
+					number="{ parts: [{path: 'Tktqty'}, {path: 'Unit'}], type: 'sap.ui.model.type.Currency', formatOptions: { showMeasure: false } }"
+					numberUnit="{Unit}" type="Active" numberState="{= ${Tktqty} > 50 ? 'Error' : 'Success' }" press="onListItemPress">
+					<attributes>
+						<ObjectAttribute text="{Matnr}"/>
+						<ObjectAttribute text="{BarcodeId}"/>
+						<ObjectAttribute text="{Vbeln}"/>
+						<ObjectAttribute text="{Posnr}"/>
+						<ObjectAttribute text="{Bdmng}"/>
+					</attributes>
+				</ObjectListItem>
+			</items>
+		</List>
+		<!--<buttons>-->
+		<!--	<Button id="btn_ConfirmSubstitute" text="Pick" press="onPick" type="Accept"/>-->
+		<!--	</buttons>-->
+		</Dialog>
+	</core:FragmentDefinition>

@@ -1,0 +1,127 @@
+<mvc:View xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.ui.layout.form" xmlns:l="sap.ui.layout"
+	controllerName="giconfirmation.giconfirmation.controller.Detail" xmlns:html="http://www.w3.org/1999/xhtml">
+	<Page title="Barcode Details" showNavButton="true" navButtonPress="onNavBack">
+		<content>
+			<IconTabBar id="idIconTabBarMulti" expanded="{device>/isNoPhone}" class="sapUiResponsiveContentPadding">
+				<items>
+					<IconTabFilter icon="sap-icon://detail-view">
+						<VBox class="sapUiSmallMargin">
+							<f:Form id="FormChange354wide" editable="true">
+								<f:title>
+									<core:Title text="Barcode Details"/>
+								</f:title>
+								<f:layout>
+									<f:ResponsiveGridLayout labelSpanXL="4" labelSpanL="3" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="4"
+										emptySpanM="0" emptySpanS="0" columnsXL="2" columnsL="1" columnsM="1" singleContainerFullSize="false"/>
+								</f:layout>
+								<f:formContainers>
+									<f:FormContainer>
+										<f:FormElement label="Barcode">
+											<f:fields>
+												<Input id="txt_Barcode" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Material">
+											<f:fields>
+												<Input id="txt_Material" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="PO #">
+											<f:fields>
+												<Input id="txt_PO" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Width">
+											<f:fields>
+												<Input id="txt_width" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Actual Width">
+											<f:fields>
+												<Input id="txt_awidth" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Quantity">
+											<f:fields>
+												<Input id="txt_Quantity" type="Text" enabled="true" liveChange="handleLiveChange">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Unit">
+											<f:fields>
+												<Input id="txt_Unit" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Status">
+											<f:fields>
+												<Input id="txt_status" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Final Approval">
+											<f:fields>
+												<Input id="txt_fapprove" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Vendor Batch">
+											<f:fields>
+												<Input id="txt_VBatch" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+									</f:FormContainer>
+								</f:formContainers>
+							</f:Form>
+						</VBox>
+					</IconTabFilter>
+					<IconTabFilter icon="">
+						<Text text=""/>
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<!--<ToolbarSpacer/>-->
+				<Button id="btn_savem" type="Accept" text="Save" press="updateManualQty" width="20%"></Button>
+			</OverflowToolbar>
+		</footer>
+	</Page>
+</mvc:View>

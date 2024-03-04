@@ -1,0 +1,21 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+  <Dialog title="Additional Data">
+    <Input id="keyDoc" type="Text" placeholder="Key Document Name..." liveChange="handleDocInput"></Input>
+    <VBox>
+      <Label text=" Material Slip"/>
+      <Input id="matSlip" type="Text" placeholder="Material Slip..."></Input>
+    </VBox>
+    <VBox>
+      <Label text=" Movement Type"/>
+      <Select id="mvmtType" forceSelection="false" width="100%" change="onMovementTypeChange"></Select>
+    </VBox>
+    <VBox>
+      <Label text=" Movement Reason"/>
+      <Select id="mvmtReason" forceSelection="false" width="100%"></Select>
+    </VBox>
+    <Input id="valCostCentre" type="Text" placeholder="Cost Centre..."></Input>
+    <buttons>
+      <Button id="btn_Done" text=">>>" press="onDone" type="Accept" />
+      </buttons>
+    </Dialog>
+  </core:FragmentDefinition>

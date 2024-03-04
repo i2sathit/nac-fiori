@@ -1,0 +1,133 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+	<Dialog title="Scanned Barcode Details">
+		<l:Grid defaultSpan="L12 M12 S12" width="auto" id="idGrid_2">
+			<l:content>
+				<f:SimpleForm id="SimpleFormDisplay354_2" minWidth="1024" maxContainerCols="2" editable="false" layout="ResponsiveGridLayout" labelSpanL="3"
+					labelSpanM="3" emptySpanL="4" emptySpanM="4" columnsL="2" columnsM="2">
+					<f:content>
+						<VBox class="sapUiSmallMargin">
+							<f:Form id="FormChange354wide_2" editable="true">
+								<f:title>
+									<core:Title text="Barcode Details"/>
+								</f:title>
+								<f:layout>
+									<f:ResponsiveGridLayout labelSpanXL="4" labelSpanL="3" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="4"
+										emptySpanM="0" emptySpanS="0" columnsXL="2" columnsL="1" columnsM="1" singleContainerFullSize="false"/>
+								</f:layout>
+								<f:formContainers>
+									<f:FormContainer>
+										<f:formElements>
+											<f:FormElement label="Invoice #">
+												<f:fields>
+													<Input id="txt_Invoice" type="Text" enabled="false">
+														<suggestionItems>
+															<core:Item text="/"/>
+														</suggestionItems>
+													</Input>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="PO #">
+												<f:fields>
+													<Input id="txt_PO" type="Text" enabled="false">
+														<suggestionItems>
+															<core:Item text="/"/>
+														</suggestionItems>
+													</Input>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Barcode">
+												<f:fields>
+													<Input id="txt_Barcode" type="Text" enabled="false">
+														<suggestionItems>
+															<core:Item text="/"/>
+														</suggestionItems>
+													</Input>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Customer IM">
+												<f:fields>
+													<Input id="txt_CustomerIM" type="Text" enabled="false">
+														<suggestionItems>
+															<core:Item text="/"/>
+														</suggestionItems>
+													</Input>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Size">
+												<f:fields>
+													<Input id="txt_Size" type="Text" enabled="false">
+														<suggestionItems>
+															<core:Item text="/"/>
+														</suggestionItems>
+													</Input>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Color Code">
+												<f:fields>
+													<Input id="txt_ColCode" type="Text" enabled="false">
+														<suggestionItems>
+															<core:Item text="/"/>
+														</suggestionItems>
+													</Input>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Color Desc">
+												<f:fields>
+													<Input id="txt_ColDesc" type="Text" enabled="false">
+														<suggestionItems>
+															<core:Item text="/"/>
+														</suggestionItems>
+													</Input>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Quantity">
+												<f:fields>
+													<Input id="txt_Quantity" type="Text" enabled="true">
+														<suggestionItems>
+															<core:Item text="/"/>
+														</suggestionItems>
+													</Input>
+												</f:fields>
+											</f:FormElement>
+											<f:FormElement label="Roll #">
+												<f:fields>
+													<Input id="txt_Roll" type="Text" enabled="false">
+														<suggestionItems>
+															<core:Item text="/"/>
+														</suggestionItems>
+													</Input>
+												</f:fields>
+											</f:FormElement>
+										</f:formElements>
+										<f:FormElement label="Vendor Batch">
+											<f:fields>
+												<Input id="txt_VBatch" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Customer">
+											<f:fields>
+												<Input id="txt_Customer" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+									</f:FormContainer>
+								</f:formContainers>
+							</f:Form>
+						</VBox>
+					</f:content>
+				</f:SimpleForm>
+			</l:content>
+		</l:Grid>
+		<buttons>
+			<Button text="+" press="onAddMaterialToPost" type="Accept"/>
+			<Button text="-" press="onRemoveMaterialToPost" type="Reject"/>
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>
