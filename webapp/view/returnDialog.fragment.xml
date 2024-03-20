@@ -1,0 +1,16 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core">
+  <Dialog id="reDialog" title="Goods Return">
+    <VBox>
+        <Label text="  Barcode Qty" labelFor="valBarcodeQty" />
+        <Input id="valBarcodeQty" type="Text" editable="false"></Input>
+    </VBox>
+    <VBox>
+        <Label text="  Return Qty" labelFor="valReturnQty" />
+        <Input id="valReturnQty" type="Text" editable="false"></Input>
+    </VBox>
+    <buttons>
+      <Button id="btn_ReSubmit" text="Post" press="onReturnSubmit" />
+      <Button id="btn_ReCancel" text="Cancel" press="onReturnCancel" />
+    </buttons>
+    </Dialog>
+  </core:FragmentDefinition>

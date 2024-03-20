@@ -1,6 +1,7 @@
 <mvc:View xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:f="sap.ui.layout.form" xmlns:l="sap.ui.layout"
 	controllerName="giconfirmation.giconfirmation.controller.Detail" xmlns:html="http://www.w3.org/1999/xhtml">
-	<Page title="Barcode Details" showNavButton="true" navButtonPress="onNavBack">
+	<Page title="Barcode Details" id="pDetails" showNavButton="true" navButtonPress="onNavBack">
+	<!-- <Page title="Barcode Details" id="pDetails" > -->
 		<content>
 			<IconTabBar id="idIconTabBarMulti" expanded="{device>/isNoPhone}" class="sapUiResponsiveContentPadding">
 				<items>
@@ -34,9 +35,62 @@
 												</Input>
 											</f:fields>
 										</f:FormElement>
-										<f:FormElement label="PO #">
+										<f:FormElement label="Batch PO">
 											<f:fields>
 												<Input id="txt_PO" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Size">
+											<f:fields>
+												<Input id="txt_Size" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Quantity">
+											<f:fields>
+												<Input id="txt_Quantity" type="Number" enabled="true" change="handleLiveChange"
+													value="{
+														type: 'sap.ui.model.type.Float',
+														formatOptions: {
+															groupingSeparator: ',',
+															decimalSeparator: '.',
+															minFractionDigits: 3,
+															maxFractionDigits: 3
+														} }" >
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Unit">
+											<f:fields>
+												<Input id="txt_Unit" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Final Approval">
+											<f:fields>
+												<Input id="txt_fapprove" type="Text" enabled="false">
+													<suggestionItems>
+														<core:Item text="/"/>
+													</suggestionItems>
+												</Input>
+											</f:fields>
+										</f:FormElement>
+										<f:FormElement label="Vendor Batch">
+											<f:fields>
+												<Input id="txt_VBatch" type="Text" enabled="false">
 													<suggestionItems>
 														<core:Item text="/"/>
 													</suggestionItems>
@@ -61,45 +115,9 @@
 												</Input>
 											</f:fields>
 										</f:FormElement>
-										<f:FormElement label="Quantity">
-											<f:fields>
-												<Input id="txt_Quantity" type="Text" enabled="true" liveChange="handleLiveChange">
-													<suggestionItems>
-														<core:Item text="/"/>
-													</suggestionItems>
-												</Input>
-											</f:fields>
-										</f:FormElement>
-										<f:FormElement label="Unit">
-											<f:fields>
-												<Input id="txt_Unit" type="Text" enabled="false">
-													<suggestionItems>
-														<core:Item text="/"/>
-													</suggestionItems>
-												</Input>
-											</f:fields>
-										</f:FormElement>
 										<f:FormElement label="Status">
 											<f:fields>
 												<Input id="txt_status" type="Text" enabled="false">
-													<suggestionItems>
-														<core:Item text="/"/>
-													</suggestionItems>
-												</Input>
-											</f:fields>
-										</f:FormElement>
-										<f:FormElement label="Final Approval">
-											<f:fields>
-												<Input id="txt_fapprove" type="Text" enabled="false">
-													<suggestionItems>
-														<core:Item text="/"/>
-													</suggestionItems>
-												</Input>
-											</f:fields>
-										</f:FormElement>
-										<f:FormElement label="Vendor Batch">
-											<f:fields>
-												<Input id="txt_VBatch" type="Text" enabled="false">
 													<suggestionItems>
 														<core:Item text="/"/>
 													</suggestionItems>

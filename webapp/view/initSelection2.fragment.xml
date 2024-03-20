@@ -9,11 +9,11 @@
       <Label text=" Movement Type"/>
       <Select id="mvmtType" forceSelection="false" width="100%" change="onMovementTypeChange"></Select>
     </VBox>
-    <VBox>
+    <!-- <VBox>
       <Label text=" Movement Reason"/>
       <Select id="mvmtReason" forceSelection="false" width="100%"></Select>
     </VBox>
-    <Input id="valCostCentre" type="Text" placeholder="Cost Centre..."></Input>
+    <Input id="valCostCentre" type="Text" placeholder="Cost Centre..."></Input> -->
     <buttons>
       <Button id="btn_Done" text=">>>" press="onDone" type="Accept" />
       </buttons>

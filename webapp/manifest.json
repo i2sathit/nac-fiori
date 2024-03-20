@@ -102,7 +102,7 @@
 					]
 				},
 				{
-					"pattern": "/{Barcode}",
+					"pattern": "/{Barcode}/{GI_Qty}/{Return}",
 					"name": "toProductDetail",
 					"target": [
 						"Master",

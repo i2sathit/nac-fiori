@@ -77,17 +77,26 @@ sap.ui.define([
     },
 
     _onSaveQtyBtnPress: function (oEvent, oData, barcodeManualData) {
+      var oType = sap.ui.getCore().byId("keyDoc").getValue().substring(0,1);
       var i;
       for (i = 0; i < this._scannedMatData.length; i++) {
         if (this._scannedMatData[i].Barcode == barcodeManualData.BarCode) {
           this._scannedMatData[i].Tktqty = barcodeManualData.Qty;
-          var lst_mats = this.getView().byId("barcodeList");
-          lst_mats.getModel("data").refresh();
+          this._scannedMatData[i].GiQty = this.convertDouble(barcodeManualData.Qty);
         }
       }
 
+      if(oType == "2") {
+        this.updateVenderQty();
+      }
+      this.updateRemainQty();
+
+      var lst_mats = this.getView().byId("barcodeList");
+      lst_mats.getModel("data").refresh();
+
       sap.m.MessageToast.show("Quantity has been updated successfully.", {});
 
+      this.getOwnerComponent().getRouter().navTo("Master", {}, false); // Clear Screen Detail
     },
 
     handleSuggest: function (oEvent) {
@@ -213,35 +222,35 @@ sap.ui.define([
           sap.ui.getCore().byId("mvmtType").setSelectedKey(selectedBwart);
 
           //populate movement reason data
-          var _mvmtFilterReason = [];
-          var movementReasonModel = [];
-          var nameFilterReason = new sap.ui.model.Filter("MovementType", sap.ui.model.FilterOperator.EQ, selectedBwart);
-          _mvmtFilterReason.push(nameFilterReason);
-          this._oModel.read("/getMovementReasonsSet", {
-            filters: _mvmtFilterReason,
-            success: function (oRetrievedResultReason) {
+          // var _mvmtFilterReason = [];
+          // var movementReasonModel = [];
+          // var nameFilterReason = new sap.ui.model.Filter("MovementType", sap.ui.model.FilterOperator.EQ, selectedBwart);
+          // _mvmtFilterReason.push(nameFilterReason);
+          // this._oModel.read("/getMovementReasonsSet", {
+          //   filters: _mvmtFilterReason,
+          //   success: function (oRetrievedResultReason) {
 
-              movementReasonModel = new sap.ui.model.json.JSONModel(oRetrievedResultReason.results);
-              sap.ui.getCore().byId("mvmtReason").setModel(movementReasonModel);
+          //     movementReasonModel = new sap.ui.model.json.JSONModel(oRetrievedResultReason.results);
+          //     sap.ui.getCore().byId("mvmtReason").setModel(movementReasonModel);
 
-              sap.ui.getCore().byId("mvmtReason").bindItems({
-                path: "/",
-                template: new sap.ui.core.Item({
-                  key: "{MovementReason}",
-                  text: "{MovementReasonDesc}"
-                })
-              });
+          //     sap.ui.getCore().byId("mvmtReason").bindItems({
+          //       path: "/",
+          //       template: new sap.ui.core.Item({
+          //         key: "{MovementReason}",
+          //         text: "{MovementReasonDesc}"
+          //       })
+          //     });
 
-              if (oRetrievedResultReason.results.length != 0) {
-                var selectedMovementReason = oRetrievedResultReason.results[0].MovementReason;
-                sap.ui.getCore().byId("mvmtReason").setSelectedKey(selectedMovementReason);
-              }
+          //     if (oRetrievedResultReason.results.length != 0) {
+          //       var selectedMovementReason = oRetrievedResultReason.results[0].MovementReason;
+          //       sap.ui.getCore().byId("mvmtReason").setSelectedKey(selectedMovementReason);
+          //     }
 
-            }.bind(this),
-            error: function (oError) {
-              sap.m.MessageToast.show("An error occured while retrieving movement reason data.", {});
-            }
-          });
+          //   }.bind(this),
+          //   error: function (oError) {
+          //     sap.m.MessageToast.show("An error occured while retrieving movement reason data.", {});
+          //   }
+          // });
           //end of movement reason data population
 
         }.bind(this),
@@ -274,17 +283,28 @@ sap.ui.define([
 
       if (mode_needs_picklist == "X") {
         var _mvmtFilter = [];
+        var mvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
         var picklistinput = sap.ui.getCore().byId("keyDoc").getValue();
         var Sloc = sap.ui.getCore().byId("sLocInput").getValue();
+        var oPlant = sap.ui.getCore().byId("PlantInput").getValue();
         var MatDoc = this.convertMatDoc(sap.ui.getCore().byId("matSlip").getValue());
         var nameFilterPickListIn = new sap.ui.model.Filter("Picklistno", sap.ui.model.FilterOperator.EQ, picklistinput);
+        // var nameFilterMatDoc = new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.EQ, MatDoc);
         var nameFilterSloc = new sap.ui.model.Filter("lgort", sap.ui.model.FilterOperator.EQ, Sloc);
+        var nameFilterPlant = new sap.ui.model.Filter("Plant", sap.ui.model.FilterOperator.EQ, oPlant);
         _mvmtFilter.push(nameFilterPickListIn);
+        // _mvmtFilter.push(nameFilterMatDoc);
         _mvmtFilter.push(nameFilterSloc);
+        _mvmtFilter.push(nameFilterPlant);
 
         if(MatDoc != '') {
           var nameFilterMatDoc = new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.EQ, MatDoc);
           _mvmtFilter.push(nameFilterMatDoc);
+        }
+
+        if(mvmtType == "262") {
+          var nameFilterReason = new sap.ui.model.Filter("Reson", sap.ui.model.FilterOperator.EQ, "X");
+          _mvmtFilter.push(nameFilterReason);
         }
 
         this._oModel.read("/getVendorBatchQtySet", {
@@ -295,12 +315,16 @@ sap.ui.define([
               this._oVenQtyList = [];
               this._oPoQtyList = [];
 
-              // Check Type '1' or '2'
-              // if(keyDocID.substring(0,1) == '1') {
-              //   var cMatDoc = this._oModelList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch);
-              // } else if(keyDocID.substring(0,1) == '2') {
-              //   var cMatDoc = this._oModelList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch && i.Vendbatch == oRetrievedResult.VendorBatch);
-              // }
+              if(this._oModelList.length > 0) {
+                if(this._oModelList[0].Message != '') {
+                  MessageBox.error(this._oModelList[0].Message);
+                  return;
+                }
+              } else {
+                MessageBox.error("An error occured while retrieving picklist data.");
+                return;
+              }
+
 
               for(let i = 0; i < this._oModelList.length; i++) {
                 this._oModelList[i].Poqty = this.convertDouble(this._oModelList[i].Poqty);
@@ -329,6 +353,13 @@ sap.ui.define([
                   }
                 }
               }
+
+              if(this._oModelList !== undefined) {
+                this.getView().byId("boxMvmtReason").setVisible(false);
+                this.getView().byId("inpMvmtReason").setValue('');
+                this.dialogSel2.close();
+              }
+
             } else {
               MessageBox.error("An error occured while retrieving picklist data.");
             }
@@ -337,65 +368,74 @@ sap.ui.define([
             MessageBox.error("An error occured while retrieving picklist data.");
           }
         });
+      } else if(this._type == "GR") {
+        var _mvmtFilter = [];
+        var mvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
+        var picklistinput = sap.ui.getCore().byId("keyDoc").getValue();
+        var Sloc = sap.ui.getCore().byId("sLocInput").getValue();
+        var oPlant = sap.ui.getCore().byId("PlantInput").getValue();
+        var MatDoc = this.convertMatDoc(sap.ui.getCore().byId("matSlip").getValue());
+        var nameFilterPickListIn = new sap.ui.model.Filter("Picklistno", sap.ui.model.FilterOperator.EQ, picklistinput);
+        // var nameFilterMatDoc = new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.EQ, MatDoc);
+        var nameFilterSloc = new sap.ui.model.Filter("lgort", sap.ui.model.FilterOperator.EQ, Sloc);
+        var nameFilterPlant = new sap.ui.model.Filter("Plant", sap.ui.model.FilterOperator.EQ, oPlant);
+        _mvmtFilter.push(nameFilterPickListIn);
+        // _mvmtFilter.push(nameFilterMatDoc);
+        _mvmtFilter.push(nameFilterSloc);
+        _mvmtFilter.push(nameFilterPlant);
 
-        // this._oModel.read("/getPickListDataOnClickSet", {
-        //   filters: _mvmtFilter,
-        //   success: function (oRetrievedResult) {
+        if(MatDoc != '') {
+          var nameFilterMatDoc = new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.EQ, MatDoc);
+          _mvmtFilter.push(nameFilterMatDoc);
+        }
 
-        //     this._pickListData = oRetrievedResult.results;
+        if(mvmtType == "262") {
+          var nameFilterReason = new sap.ui.model.Filter("Reason", sap.ui.model.FilterOperator.EQ, "X");
+          _mvmtFilter.push(nameFilterReason);
+        }
 
-        //     var promiseArr = [];
+        this._oModel.read("/getVendorBatchQtySet", {
+          filters: _mvmtFilter,
+          success: function (oData, sStatus, oResponse) {
+            if(oData.length != 0) {
+              this._oModelList = oData.results;
+              this._oReturnList = [];
 
-        //     for (var j = 0; j < this._pickListData.length; j++) {
+              if(this._oModelList.length > 0) {
+                if(this._oModelList[0].Message != '') {
+                  MessageBox.error(this._oModelList[0].Message);
+                  return;
+                }
+              } else {
+                MessageBox.error("An error occured while retrieving picklist data.");
+                return;
+              }
 
-        //       var rbtType = sap.ui.getCore().byId("RG_Type");
-        //       var sType = rbtType.getSelectedIndex();
-        //       var rbtMode = sap.ui.getCore().byId("RG_Mode");
-        //       var sMode = rbtMode.getSelectedIndex();
-        //       var picklistNumber = sap.ui.getCore().byId("keyDoc").getValue();
+              for(let i = 0; i < this._oModelList.length; i++) {
+                this._oModelList[i].Poqty = this.convertDouble(this._oModelList[i].Poqty);
+                this._oModelList[i].Venqty = this.convertDouble(this._oModelList[i].Venqty);
+                var iListReturnQty = { "Barcode": this._oModelList[i].Barcodeid, "Charg": this._oModelList[i].Charg, "Matnr": this._oModelList[i].Matnr, 
+                                    "Picklistno": this._oModelList[i].Picklistno, "Plant": this._oModelList[i].Plant, "lgort": this._oModelList[i].lgort,
+                                    "Vendbatch": this._oModelList[i].Vendbatch, "Reason": this._oModelList[i].Reason, "Venqty": this._oModelList[i].Venqty,
+                                    "Size": this._oModelList[i].size1, "Unit": this._oModelList[i].Unit };
 
-        //       var promiseBarcode = new Promise(function (resolve, reject) {
-        //         //  if (this._pickListData[j].Bin === "CUTTING" || this._pickListData[j].Bin === "SEWING") {
-        //         this._oModel.read("/getBarcodeDetailsSet(Barcode='" + encodeURI(this._pickListData[j].BarcodeId) + "',Mode='" + sMode +
-        //           "',DocumentNumber='" + picklistNumber + "',Type='" + sType + "')", {
-        //           async: false,
-        //           success: function (oRetrievedResultS) {
-        //             resolve(oRetrievedResultS);
-        //           }
-        //         }
-        //         );
-        //         //  }
+                this._oReturnList.push(iListReturnQty);
+              }
 
-        //       }.bind(this));
-        //       promiseArr.push(promiseBarcode);
-        //     }
-
-        //     Promise.all(promiseArr).then(function (oresponse) {
-
-        //       for (var q = 0; q < oresponse.length; q++) {
-
-        //         const arrayFind = this._scannedMatData.find(({
-        //           Barcode
-        //         }) => Barcode === oresponse[q].Barcode);
-        //         if (arrayFind == undefined) {
-        //           this._scannedMatData.push(oresponse[q]);
-        //         }
-        //       }
-
-        //       var lst_mats = this.getView().byId("barcodeList");
-        //       lst_mats.getModel("data").refresh();
-
-        //       sap.m.MessageToast.show("Pick list data have been retrieved successfully.", {});
-        //     }.bind(this));
-
-        //   }.bind(this),
-        //   error: function (oError) {
-        //     sap.m.MessageToast.show("An error occured while retrieving picklist data.", {});
-        //   }
-        // });
+              if(this._oModelList !== undefined) {
+                this.getView().byId("boxMvmtReason").setVisible(true);
+                this.getView().byId("inpMvmtReason").setValue(this._oReturnList[0].Reason);
+                this.dialogSel2.close();
+              }
+            } else {
+              MessageBox.error("An error occured while retrieving picklist data.");
+            }
+          }.bind(this),
+          error: function (oError, sStatus, oResponse) {
+            MessageBox.error("An error occured while retrieving picklist data.");
+          }
+        });
       }
-
-      this.dialogSel2.close();
 
     },
 
@@ -421,7 +461,6 @@ sap.ui.define([
         for(let i = oMatDoc.length; i < 18; i++) {
           oMatDoc = '0' + oMatDoc;
         }
-        oMatDoc = '';
       } else {
         oMatDoc = '';
       }
@@ -440,12 +479,23 @@ sap.ui.define([
     onListItemPress: function (oEvent) {
 
       var oStorage = jQuery.sap.storage(jQuery.sap.storage.Type.local);
+      var oMvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
+      var oReturn;
       //get object()
       var ListItemPressed = oEvent.getSource().getBindingContext().getObject();
       oStorage.put("scannedMatData", ListItemPressed);
+      var oGiQty = this.convertDouble(ListItemPressed.GiQty.toFixed(3))
+
+      if(oMvmtType == '262') {
+        oReturn = 'X';
+      } else {
+        oReturn = 'E';
+      }
 
       this.getRouter().navTo("toProductDetail", {
-        Barcode: encodeURIComponent(ListItemPressed.Barcode)
+        Barcode: encodeURIComponent(ListItemPressed.Barcode),
+        GI_Qty: encodeURIComponent(oGiQty),
+        Return: encodeURIComponent(oReturn)
       }, false);
     },
 
@@ -464,6 +514,17 @@ sap.ui.define([
     clearGIData: function (oEvent) {
 
       this.getView().byId("btn_submit").setEnabled(true);
+      sap.ui.getCore().byId("PlantInput").setValue('');
+      sap.ui.getCore().byId("PlantInput").setValueState('Error');
+      sap.ui.getCore().byId("sLocInput").setValue('');
+      sap.ui.getCore().byId("sLocInput").setValueState('Error');
+      sap.ui.getCore().byId("DateInput").setValue('');
+      sap.ui.getCore().byId("DateInput").setValueState('Error');
+      sap.ui.getCore().byId("keyDoc").setValue('');
+      sap.ui.getCore().byId("keyDoc").setValueState('Error');
+      sap.ui.getCore().byId("matSlip").setValue('');
+
+      this.getOwnerComponent().getRouter().navTo("Master", {}, false); // Clear Screen Detail
 
       //clear scanned list
       this._scannedMatData = [];
@@ -576,117 +637,141 @@ sap.ui.define([
           var error_flag = "";
           var error_message = "";
           var is_substitutable = "";
-          var cMatDoc, cPoList;
-          cPoList = this._oPoQtyList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch);
-          // Check Type '1' or '2'
-          if(keyDocID.substring(0,1) == '1') {
-            cMatDoc = this._oPoQtyList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch);
-          } else if(keyDocID.substring(0,1) == '2') {
-            cMatDoc = this._oVenQtyList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch && i.VendorBatch == oRetrievedResult.VendorBatch);
+          var cMatDoc, cPoList, cReturnList;
+          var oItems = this.getView().byId("barcodeList").getItems();
+          var oMvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
+
+          // Check Duplitcate Barcode
+          if(oItems.length > 0) {
+            for(let i = 0; i < oItems.length; i++) {
+              var oItem = oItems[i].getBindingContext().getObject();
+              if(oItem.Barcode == oRetrievedResult.Barcode) {
+                MessageBox.error("Duplitcate Barcode");
+                return;
+              }
+            }
           }
+          
+          if(oMvmtType == '261') {
+            cPoList = this._oPoQtyList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch);
 
-          if(cPoList.length == 0) {
-            MessageBox.error("Unable to find value for this barcode.");
-            return;
-          }
-
-          // init Value
-          // var oSize = cMatDoc[0].size1;
-          var oTktQty = this.convertDouble(oRetrievedResult.Tktqty);
-          var oGiQty = oTktQty;
-          var oRemainQty = oTktQty - oGiQty;
-          // var oVenBatch = cMatDoc[0].VendorBatch;
-          var oRemainVenBatch;
-          var oRemainPoBatch = cPoList[0].Poqty;
-          var oPoQty = oRemainPoBatch - oGiQty;
-
-          //Check filter
-          if(cMatDoc.length > 0) {
-            // Check Sum Qty Vender Batch
+            // Check Type '1' or '2'
             if(keyDocID.substring(0,1) == '1') {
-              oRemainVenBatch = 0
+              cMatDoc = this._oPoQtyList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch);
             } else if(keyDocID.substring(0,1) == '2') {
-              oRemainVenBatch = cMatDoc[0].Venqty - oGiQty;
+              cMatDoc = this._oVenQtyList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch && i.VendorBatch == oRetrievedResult.VendorBatch);
             }
 
-            if(oPoQty >= 0) {
-              // oRetrievedResult.Size = oSize;
-              oRetrievedResult.TktQty = oTktQty;
-              oRetrievedResult.GiQty = oGiQty;
-              oRetrievedResult.RemainQty = oRemainQty;
-              oRetrievedResult.PoQty = oPoQty;
-              oRetrievedResult.VenQty = oRemainVenBatch;
-
-              cPoList[0].Poqty = oPoQty;
-              cMatDoc[0].Venqty = oRemainVenBatch;
-            } else {
-              MessageBox.error("This barcode exceeds Po Qty and cannot be scanned.");
+            if(cPoList.length == 0) {
+              MessageBox.error("Unable to find value for this barcode.");
               return;
             }
-          } else {
-            if(keyDocID.substring(0,1) == '2') {
-              this._BarcodeTemp = oRetrievedResult;
 
-              if(this._ReasonDialog) {
-                this._ReasonDialog.destroy(true);
+            // init Value
+            // var oSize = cMatDoc[0].size1;
+            var oTktQty = this.convertDouble(oRetrievedResult.Tktqty);
+            var oGiQty = oTktQty;
+            var oRemainQty = oTktQty - oGiQty;
+            // var oVenBatch = cMatDoc[0].VendorBatch;
+            var oRemainVenBatch;
+            var oRemainPoBatch = cPoList[0].Poqty;
+            var oPoQty = oRemainPoBatch - oGiQty;
+
+            if(cMatDoc.length > 0) {
+              if(keyDocID.substring(0,1) == '1') {
+                oRemainVenBatch = 0
+                if(oRemainPoBatch < oTktQty) {
+                  oGiQty = oRemainPoBatch;
+                  oRemainQty = oTktQty - oGiQty;
+                  oPoQty = oRemainPoBatch - oGiQty;
+                }
+              } else if(keyDocID.substring(0,1) == '2') {
+                var oVenQty = cMatDoc[0].Venqty;
+                if(oVenQty > oRemainPoBatch) {
+                  oVenQty = oRemainPoBatch;
+                }
+                oRemainVenBatch = oVenQty;
+                if(oRemainVenBatch < oTktQty && oRemainVenBatch <= oRemainPoBatch && oVenQty >= 0)  {
+                  oGiQty = oRemainVenBatch;
+                  oRemainVenBatch = cMatDoc[0].Venqty - oGiQty;
+                  oRemainQty = oTktQty - oGiQty;
+                  oPoQty = oRemainPoBatch - oGiQty;
+                } else {
+                  oRemainVenBatch = oVenQty - oGiQty;
+                }
               }
 
-              this._ReasonDialog = sap.ui.xmlfragment("rDialog","giconfirmation.giconfirmation.view.reasonDialog", this);
-              this.getView().addDependent(this._ReasonDialog);
-              
-              // if(!this._ReasonDialog) {
-              //   this._ReasonDialog = sap.ui.xmlfragment("rDialog","giconfirmation.giconfirmation.view.reasonDialog", this);
-              //   this.getView().addDependent(this._ReasonDialog);
-              // }
+              if(oRemainPoBatch != 0) {
+                // oRetrievedResult.Size = oSize;
+                oRetrievedResult.TktQty = oTktQty;
+                oRetrievedResult.GiQty = oGiQty;
+                oRetrievedResult.RemainQty = oRemainQty;
+                oRetrievedResult.PoQty = oPoQty;
+                oRetrievedResult.VenQty = oRemainVenBatch;
 
-              var selectedBwart = sap.ui.getCore().byId("mvmtType").getSelectedKey();
-              var _mvmtFilterReason = [];
-              var movementReasonModel = [];
-              var nameFilterReason = new sap.ui.model.Filter("MovementType", sap.ui.model.FilterOperator.EQ, selectedBwart);
-              _mvmtFilterReason.push(nameFilterReason);
+                cPoList[0].Poqty = oPoQty;
+                cMatDoc[0].Venqty = oRemainVenBatch;
+              } else {
+                MessageBox.error("This barcode exceeds Po Qty and cannot be scanned.");
+                return;
+              }
+            } else {
+              if(keyDocID.substring(0,1) == '2') {
+                this._BarcodeTemp = oRetrievedResult;
 
-              this._oModel.read("/getMovementReasonsSet", {
-                filters: _mvmtFilterReason,
-                success: function (oRetrievedResultReason) {
-
-                  movementReasonModel = new sap.ui.model.json.JSONModel(oRetrievedResultReason.results);
-                  sap.ui.core.Fragment.byId("rDialog", "mReasonList").setModel(movementReasonModel);
-                  // sap.ui.core.Fragment.byId("rDialog", "valChangeBarcode").setEnabled(false);
-
-                  sap.ui.core.Fragment.byId("rDialog", "mReasonList").bindItems({
-                    path: "/",
-                    template: new sap.ui.core.Item({
-                      key: "{MovementReason}",
-                      text: "{MovementReasonDesc}"
-                    })
-                  });
-
-                  // if (oRetrievedResultReason.results.length != 0) {
-                  //   var selectedMovementReason = oRetrievedResultReason.results[0].MovementReason;
-                  //   sap.ui.getCore().byId("valChangeBarcode").setSelectedKey(selectedMovementReason);
-                  // }
-
-                  this._ReasonDialog.open();
-                }.bind(this),
-                error: function (oError) {
-                  sap.m.MessageToast.show("An error occured while retrieving movement reason data.", {});
+                if(this._ReasonDialog) {
+                  this._ReasonDialog.destroy(true);
                 }
-              });
 
-              // if(oPoQty >= 0) {
-              //   // oRetrievedResult.Size = "";
-              //   oRetrievedResult.TktQty = oTktQty;
-              //   oRetrievedResult.GiQty = oGiQty;
-              //   oRetrievedResult.RemainQty = oRemainQty;
-              //   oRetrievedResult.PoQty = oPoQty;
-              //   oRetrievedResult.VenQty = 0;
+                this._ReasonDialog = sap.ui.xmlfragment("rDialog","giconfirmation.giconfirmation.view.reasonDialog", this);
+                this.getView().addDependent(this._ReasonDialog);
 
-              //   cPoList[0].Poqty = oPoQty;
-              // } else {
-              //   MessageBox.error("This barcode exceeds Po Qty and cannot be scanned.");
-              //   return;
-              // }
-              return;
+                var selectedBwart = sap.ui.getCore().byId("mvmtType").getSelectedKey();
+                var _mvmtFilterReason = [];
+                var movementReasonModel = [];
+                var nameFilterReason = new sap.ui.model.Filter("MovementType", sap.ui.model.FilterOperator.EQ, selectedBwart);
+                _mvmtFilterReason.push(nameFilterReason);
+
+                this._oModel.read("/getMovementReasonsSet", {
+                  filters: _mvmtFilterReason,
+                  success: function (oRetrievedResultReason) {
+
+                    movementReasonModel = new sap.ui.model.json.JSONModel(oRetrievedResultReason.results);
+                    sap.ui.core.Fragment.byId("rDialog", "mReasonList").setModel(movementReasonModel);
+
+                    sap.ui.core.Fragment.byId("rDialog", "mReasonList").bindItems({
+                      path: "/",
+                      template: new sap.ui.core.Item({
+                        key: "{MovementReason}",
+                        text: "{MovementReasonDesc}"
+                      })
+                    });
+
+                    this._ReasonDialog.open();
+                  }.bind(this),
+                  error: function (oError) {
+                    sap.m.MessageToast.show("An error occured while retrieving movement reason data.", {});
+                  }
+                });
+
+                return;
+              } else {
+                MessageBox.error("Unable to find value for this barcode.");
+                return;
+              }
+            }
+          } else if (oMvmtType == '262') {
+            cReturnList = this._oReturnList.filter(o => o.Barcode == oRetrievedResult.Barcode);
+
+            if(cReturnList.length > 0) {
+              let oReTktQty = this.convertDouble(oRetrievedResult.TktQty);
+              let oReGiQty = cReturnList[0].Venqty;
+              let oReRemainQty = oReTktQty - oReGiQty;
+              oRetrievedResult.TktQty = oReTktQty;
+              oRetrievedResult.GiQty = oReGiQty;
+              oRetrievedResult.RemainQty = oReRemainQty;
+              oRetrievedResult.Return = 'X';
+              cReturnList[0].Return = 'X';
             } else {
               MessageBox.error("Unable to find value for this barcode.");
               return;
@@ -802,7 +887,14 @@ sap.ui.define([
             }
 
             if(checkPoqty) {
-              MessageBox.success("Complete Pick List")
+              MessageBox.success("Complete Pick List");
+            }
+          }
+
+          if(this._oReturnList) {
+            cReturnList = this._oReturnList.filter(o => o.Return != 'X');
+            if(cReturnList.length == 0) {
+              MessageBox.success("Complete Pick List");
             }
           }
 
@@ -850,14 +942,20 @@ sap.ui.define([
         var oRemainPoBatch = cPoList[0].Poqty;
         var oPoQty = oRemainPoBatch - oGiQty;
 
-        if(oPoQty >= 0) {
+        if(oRemainPoBatch >= 0) {
           tBarcode.TktQty = oTktQty;
-          tBarcode.GiQty = oGiQty;
-          tBarcode.RemainQty = oRemainQty;
-          tBarcode.PoQty = oPoQty;
+          if(oTktQty > oRemainPoBatch) {
+            tBarcode.GiQty = oRemainPoBatch;
+            oGiQty = oRemainPoBatch;
+          } else {
+            tBarcode.GiQty = oGiQty;
+          }
+          tBarcode.RemainQty = oTktQty - oGiQty;
+          tBarcode.PoQty = oRemainPoBatch - oGiQty;
           tBarcode.VenQty = 0;
+          tBarcode.Reason = sap.ui.core.Fragment.byId("rDialog", "mReasonList").getSelectedKey();
 
-          cPoList[0].Poqty = oPoQty;
+          cPoList[0].Poqty = oRemainPoBatch - oGiQty;
 
           this._scannedMatData.push(tBarcode);
           this.oDataManager.addScannedMaterialData(tBarcode.Barcode, tBarcode);
@@ -891,6 +989,12 @@ sap.ui.define([
       this._ReasonDialog.close();
       // this._ReasonDialog.destroy(true);
       this._BarcodeTemp = {};
+    },
+
+    onReturnCancel: function (oEvent) {
+      this._ReturnDialog.close();
+      // this._ReasonDialog.destroy(true);
+      // this._BarcodeTemp = {};
     },
 
     handleUserInput: function (oEvent) {
@@ -952,6 +1056,7 @@ sap.ui.define([
 
       //this._scannedMatData.splice(sPath, 1);
       var oType = sap.ui.getCore().byId("keyDoc").getValue().substring(0,1);
+      var oMvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
       var oList = oEvent.getSource();
       var oContext = oEvent.getParameter("listItem").getBindingContext();
       var oItem = oContext.getObject();
@@ -959,7 +1064,7 @@ sap.ui.define([
       var oIndex = oPath.slice(1);
       var m = oList.getModel();
       var data = m.getProperty("/");
-      debugger
+      var oBarcode = data[oIndex].Barcode;
 
       // Return value to PO List
       // var cPoList = this._oPoQtyList.filter(i => i.Matnr == oItem.Matnr && i.Charg == oItem.Batch);
@@ -968,13 +1073,26 @@ sap.ui.define([
       var removed = data.splice(oIndex, 1);
       m.setProperty("/", data);
 
-      if(oType == "2") {
-        this.updateVenderQty();
+      if(oMvmtType == '261') {
+        if(oType == "2") {
+          this.updateVenderQty();
+        }
+        this.updateRemainQty();
+      } else if(oMvmtType == '262') {
+        this.updateReturnQty(oBarcode);
       }
-      this.updateRemainQty();
 
       var lst_mats = this.getView().byId("barcodeList");
       lst_mats.getModel("data").refresh();
+    },
+
+    updateReturnQty: function (iBarcode) {
+      var oReturnList = this._oReturnList;
+      var cReturnBarcode = oReturnList.filter(o => o.Barcode == iBarcode);
+
+      if(cReturnBarcode.length > 0) {
+        cReturnBarcode[0].Return = '';
+      }
     },
 
     updateVenderQty: function () {
@@ -1008,7 +1126,6 @@ sap.ui.define([
           }
         }
       }
-      debugger
     },
 
     updateRemainQty: function () {
@@ -1039,9 +1156,11 @@ sap.ui.define([
           if(cPoList.length > 0) {
             var cPoQty = cPoList[0].Poqty;
             var oGiQty = oItem.GiQty;
+            var oRemainQty = oItem.TktQty - oGiQty
 
             cPoList[0].Poqty = cPoQty - oGiQty;
             oItem.PoQty = cPoList[0].Poqty;
+            oItem.RemainQty = oRemainQty;
           } 
         }
       }
@@ -1049,15 +1168,62 @@ sap.ui.define([
 
     updateGRDataToSAP: function (oEvent) {
 
-      this.getView().byId("btn_submit").setEnabled(false);
+      var oMvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
+
+      if(oMvmtType == '261') {
+        this.postOData();
+      } else if(oMvmtType == '262') {
+        if(this._ReturnDialog) {
+          this._ReturnDialog.destroy(true);
+        }
+
+        this._ReturnDialog = sap.ui.xmlfragment("reDialog","giconfirmation.giconfirmation.view.returnDialog", this);
+        this.getView().addDependent(this._ReturnDialog);
+
+        var oItems = this.getView().byId("barcodeList").getItems();
+        var oBarQty = oItems.length;
+        var sumQty = 0;
+
+        for(let i = 0; i < oBarQty; i++) {
+          var oItem = oItems[i].getBindingContext().getObject();
+          sumQty = sumQty + oItem.GiQty;
+        }
+
+        sap.ui.core.Fragment.byId("reDialog", "valBarcodeQty").setValue(oBarQty);
+        sap.ui.core.Fragment.byId("reDialog", "valReturnQty").setValue(sumQty);
+      }
+
+      // this.getView().byId("btn_submit").setEnabled(false);
+      this._ReturnDialog.open();
+
+    },
+
+    onReturnSubmit: function() {
+      this.postOData();
+      this._ReturnDialog.close();
+    },
+
+    formatDate: function(iDate) {
+      var year = '' + iDate.getFullYear();
+      var month = '' + (iDate.getMonth() + 1); // get Month (0-11) + 1 
+      var day = '' + iDate.getDate();
+
+      if (month.length < 2) 
+          month = "0" + month;
+      if (day.length < 2) 
+          day = "0" + day;
+
+      return day + '.' + month + '.' + year;
+  },
+
+    postOData: function() {
       var oDeepCreateGIData = {};
-
-      // this.postButton.setVisible(false);
-      // this.postButton.setEnabled(false);
-
+      var oDateValue = sap.ui.getCore().byId("DateInput").getDateValue();
+      var sDate = this.formatDate(oDateValue);
+      debugger
       //ID is always blank as it passes one batch at a time
       oDeepCreateGIData.Plant = sap.ui.getCore().byId("PlantInput").getValue();
-      oDeepCreateGIData.PostingDate = sap.ui.getCore().byId("DateInput").getValue();
+      oDeepCreateGIData.PostingDate = sDate;
       oDeepCreateGIData.StorageLocation = sap.ui.getCore().byId("sLocInput").getValue();
       oDeepCreateGIData.MaterialSlip = sap.ui.getCore().byId("matSlip").getValue();
 
@@ -1097,32 +1263,46 @@ sap.ui.define([
       }
 
       oDeepCreateGIData.DocumentNumber = sap.ui.getCore().byId("keyDoc").getValue();
-      oDeepCreateGIData.MovementType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
-      oDeepCreateGIData.MovementReason = sap.ui.getCore().byId("mvmtReason").getSelectedKey();
-      oDeepCreateGIData.CostCentre = sap.ui.getCore().byId("valCostCentre").getValue();
+      // oDeepCreateGIData.Movement_Reason = oReason; 
+      // oDeepCreateGIData.MovementReason = sap.ui.getCore().byId("mvmtReason").getSelectedKey();
+      // oDeepCreateGIData.CostCentre = sap.ui.getCore().byId("valCostCentre").getValue();
+
+      // update Reason
+      var listBarcode = this._scannedMatData;
+      for(let i = listBarcode.length-1; i >= 0; i --) {
+        var oItem = listBarcode[i];
+        if(oItem.Reason !== undefined) {
+          var filterReason = this._scannedMatData.filter(o => o.Batch == oItem.Batch && o.Matnr == oItem.Matnr && o.Reason != '' && o.Reason !== undefined);;
+          for(let j = 0; j < filterReason.length; j++) {
+                  filterReason[i].Reason = oItem.Reason;
+                }
+        } else {
+          oItem.Reason = "";
+        }
+      }
       
       //adjust mapping
       var binItemData = [];
       for (var iIndex = 0; iIndex < this._scannedMatData.length; iIndex++) {
-
         binItemData.push({
           // Id
           BarcodeNumber: this._scannedMatData[iIndex].Barcode,
-          Quantity: this._scannedMatData[iIndex].Tktqty,
+          Quantity: this._scannedMatData[iIndex].GiQty.toString(),
           Batch: this._scannedMatData[iIndex].Ebeln,
           Material: this._scannedMatData[iIndex].Matnr,
-          VenderBatch: this._scannedMatData[iIndex].VendorBatch,
-          OriginalBarcode: this._scannedMatData[iIndex].OriginalBarcode
+          VendorBatch: this._scannedMatData[iIndex].VendorBatch,
+          OriginalBarcode: this._scannedMatData[iIndex].OriginalBarcode,
+          Movement_Reason: this._scannedMatData[iIndex].Reason
         });
       }
       oDeepCreateGIData.scanHeaderItem = binItemData;
 
       var _scannedMatData = this._scannedMatData;
       var lst_mats = this.getView().byId("barcodeList");
-
+      debugger;
       this._oModel.create("/postScanDataHeaderSet", oDeepCreateGIData, {
 
-        success: function (oData, oResponse) {
+        success: function (oData, sStatus, oResponse) {
           for (var i = 0; i < _scannedMatData.length; i++) {
             for (var j = 0; j < oData.scanHeaderItem.results.length; j++) {
               if (oData.scanHeaderItem.results[j].BarcodeNumber === _scannedMatData[i].Barcode) {
@@ -1132,11 +1312,16 @@ sap.ui.define([
           }
           this._scannedMatData = _scannedMatData;
           lst_mats.getModel("data").refresh();
+          
         }.bind(this),
-        error: function (oError) { }
+        error: function (oError) { 
+          if(!oError.responseJSON && oError.responseText){
+            oError.responseJSON = JSON.parse(oError.responseText);
+          }
+          MessageBox.error(oError.responseJSON.error.message.value);
+        }
       });
       this._scannedMatData = _scannedMatData;
-
     }
 
   });

@@ -3,124 +3,143 @@
 		<content>
 			<!--<ndc:BarcodeScannerButton scanSuccess="handleBarcodeScannerSuccess" width="100%"/>-->
 			<Input id="input-Barcode" liveChange="handleBarcodeScannerSuccess" required="true" placeholder="Barcode" />
+			<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" id="boxMvmtReason" visible="false">
+				<Label id="lbMvmtReason" labelFor="inpMvmtReason" text="Movement Reason" />
+				<Input id="inpMvmtReason" editable="false" />
+			</VBox>
 			<!--//list view comes here-->
 			<!--//<List id="barcodeList" mode="Delete" delete="handleDelete" class="sapUiResponsiveMargin" width="auto" items="{ path : '/', sorter : { path : 'TimeStamp', descending: true } }">-->
 			<List id="barcodeList" mode="Delete" delete="handleDelete" class="sapUiResponsiveMargin" width="auto" items="{ path : '/', sorter : { path : 'TimeStamp', descending: true } }">			
 				<items>
-					<CustomListItem type="Active" press="onListItemPress" highlight="Warning"> 
+					<CustomListItem type="Active" press="onListItemPress"> 
 								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
 									<HBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
 										<!-- <FormattedText class="sapUiTinyMarginTop sapUiNoMarginBottom sapUiTinyMarginBegin sapUiNoMarginEnd" htmlText="{HeaderKey}"/> -->
-										<Text class="sapUiTinyMargin" text="{HeaderKey} | {Matnr} | {Barcode}" />
+										<Text class="sapUiTinyMargin" text="{HeaderKey} {Matnr} | {Barcode}" />
 									</HBox>
 								</VBox>
-								<!-- <VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
+								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" visible="{= ${Return} === 'X' ? true : false }">
 									<HBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
-										<Text class="sapUiTinyMargin" text="{Matnr}" />
-										<Text class="sapUiTinyMargin" text="{Barcode}" />
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="40%">
+											<Text class="sapUiTinyMargin" text="Return Qty" />
+										</VBox>
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd"
+											justifyContent="End" alignContent="End" alignItems="End" width="40%">
+											<Text class="sapUiTinyMargin" text="{ path: 'GiQty', 
+												type: 'sap.ui.model.type.Float',
+													formatOptions: {
+														groupingSeparator: ',',
+														decimalSeparator: '.',
+														minFractionDigits: 3,
+														maxFractionDigits: 3
+													} }" />
+										</VBox>
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="20%">
+											<Text class="sapUiTinyMargin" text="{Unit}" />
+										</VBox>
 									</HBox>
-								</VBox> -->
-								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
+								</VBox>
+								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" visible="{= ${Return} === 'X' ? false : true }">
 									<HBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="50%">
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="40%">
 											<Text class="sapUiTinyMargin" text="Ticket" />
 										</VBox>
 										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd"
-											justifyContent="End" alignContent="End" alignItems="End" width="35%">
+											justifyContent="End" alignContent="End" alignItems="End" width="40%">
 											<Text class="sapUiTinyMargin" text="{ path: 'TktQty', 
 												type: 'sap.ui.model.type.Float',
 													formatOptions: {
 														groupingSeparator: ',',
 														decimalSeparator: '.',
-														minFractionDigits: 2,
-														maxFractionDigits: 2
+														minFractionDigits: 3,
+														maxFractionDigits: 3
 													} }" />
 										</VBox>
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="15%">
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="20%">
 											<Text class="sapUiTinyMargin" text="{Unit}" />
 										</VBox>
 									</HBox>
 								</VBox>
-								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
+								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" visible="{= ${Return} === 'X' ? false : true }">
 									<HBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="50%">
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="40%">
 											<Text class="sapUiTinyMargin" text="GI" />
 										</VBox>
 										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd"
-											justifyContent="End" alignContent="End" alignItems="End" width="35%">
+											justifyContent="End" alignContent="End" alignItems="End" width="40%">
 											<Text class="sapUiTinyMargin" text="{ path: 'GiQty', 
 												type: 'sap.ui.model.type.Float',
 												formatOptions: {
 													groupingSeparator: ',',
 													decimalSeparator: '.',
-													minFractionDigits: 2,
-													maxFractionDigits: 2
+													minFractionDigits: 3,
+													maxFractionDigits: 3
 												} }" />
 										</VBox>
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="15%">
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="20%">
 											<Text class="sapUiTinyMargin" text="{Unit}" />
 										</VBox>
 									</HBox>
 								</VBox>
-								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd">
+								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" visible="{= ${Return} === 'X' ? false : true }">
 									<HBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="50%">
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="40%">
 											<Text class="sapUiTinyMargin" text="Remain" />
 										</VBox>
 										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd"
-											justifyContent="End" alignContent="End" alignItems="End" width="35%">
+											justifyContent="End" alignContent="End" alignItems="End" width="40%">
 											<Text class="sapUiTinyMargin" text="{ path: 'RemainQty', 
 												type: 'sap.ui.model.type.Float',
 													formatOptions: {
 														groupingSeparator: ',',
 														decimalSeparator: '.',
-														minFractionDigits: 2,
-														maxFractionDigits: 2
+														minFractionDigits: 3,
+														maxFractionDigits: 3
 													} }" />
 										</VBox>
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="15%">
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="20%">
 											<Text class="sapUiTinyMargin" text="{Unit}" />
 										</VBox>
 									</HBox>
 								</VBox>
-								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" visible="{= ${DocumentNumber}.substring(0,1) === '1' ? false : true }">
+								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" visible="{= ${DocumentNumber}.substring(0,1) === '1' || ${Return} === 'X' ? false : true }">
 									<HBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" >
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="50%">
-											<Text class="sapUiTinyMargin" text="Remain V. Batch" />
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="40%">
+											<Text class="sapUiTinyMargin" text="Rem. V. Batch" />
 										</VBox>
 										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" 
-											justifyContent="End" alignContent="End" alignItems="End" width="35%">
+											justifyContent="End" alignContent="End" alignItems="End" width="40%">
 											<Text class="sapUiTinyMargin" text="{ path: 'VenQty',
 												type: 'sap.ui.model.type.Float',
 														formatOptions: {
 															groupingSeparator: ',',
 															decimalSeparator: '.',
-															minFractionDigits: 2,
-															maxFractionDigits: 2
+															minFractionDigits: 3,
+															maxFractionDigits: 3
 														} }" />
 										</VBox>
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="15%">
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="20%">
 											<Text class="sapUiTinyMargin" text="{Unit}" />
 										</VBox>
 									</HBox>
 								</VBox>
-								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd">
+								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" visible="{= ${Return} === 'X' ? false : true }">
 									<HBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd">
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="50%">
-											<Text class="sapUiTinyMargin" text="Remain Batch" />
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="40%">
+											<Text class="sapUiTinyMargin" text="Rem. Batch" />
 										</VBox>
 										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" 
-											justifyContent="End" alignContent="End" alignItems="End" width="35%">
+											justifyContent="End" alignContent="End" alignItems="End" width="40%">
 											<Text class="sapUiTinyMargin" text="{ path: 'PoQty', 
 												type: 'sap.ui.model.type.Float',
 													formatOptions: {
 														groupingSeparator: ',',
 														decimalSeparator: '.',
-														minFractionDigits: 2,
-														maxFractionDigits: 2
+														minFractionDigits: 3,
+														maxFractionDigits: 3
 													} }" />
 										</VBox>
-										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="15%">
+										<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" width="20%">
 											<Text class="sapUiTinyMargin" text="{Unit}" />
 										</VBox>
 									</HBox>
@@ -138,10 +157,10 @@
 										<core:Item key="2" text="2" />
 										<core:Item key="3" text="3" />
 									</ComboBox>
-								</VBox>
-								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" justifyContent="End" alignContent="End" alignItems="End" width="100%">
-									<ObjectStatus class="sapUiNoMarginTop sapUiTinyMarginBottom sapUiTinyMarginBegin sapUiNoMarginEnd" text="{Status}" state="{ path: 'Status', formatter: '.ArticleStatus' }"/>
 								</VBox> -->
+								<VBox class="sapUiNoMarginTop sapUiNoMarginBottom sapUiNoMarginBegin sapUiNoMarginEnd" justifyContent="Start" alignContent="Start" alignItems="Start" width="100%" >
+									<ObjectStatus class="sapUiNoMarginTop sapUiTinyMarginBottom sapUiTinyMarginBegin sapUiNoMarginEnd" text="{Status}" state="{ path: 'Status', formatter: '.ArticleStatus' }"/>
+								</VBox> 
 					</CustomListItem>
 					<!-- <ObjectListItem title="{Barcode}" 
 					number="{ parts: [{path: 'Tktqty', formatter: '.formatter.quantityValue' }, {path: 'Unit'}], type: 'sap.ui.model.type.Currency', formatOptions: { showMeasure: false, editable: true } }" 

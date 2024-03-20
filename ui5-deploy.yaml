@@ -1,0 +1,25 @@
+# yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
+
+specVersion: "3.1"
+metadata:
+  name: giconfirmation.giconfirmation
+type: application
+builder:
+  resources:
+    excludes:
+      - /test/**
+      - /localService/**
+  customTasks:
+    - name: deploy-to-abap
+      afterTask: generateCachebusterInfo
+      configuration:
+        target:
+          url: https://nacfiodevap01.niceapparelgroup.com:44300
+          client: "200"
+        app:
+          name: ZMAT_GI_APP
+          description: Edit Screen Fiori for Remain Qty
+          package: ZFIORI
+          transport: FEDK900307
+        exclude:
+          - /test/

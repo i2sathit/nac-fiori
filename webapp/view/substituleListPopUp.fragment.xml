@@ -1,5 +1,5 @@
 <core:FragmentDefinition xmlns:l="sap.ui.layout" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m">
-	<Dialog title="Substitutable Barcodes">
+	<Dialog title="Substitutable Barcodes" id="dSubstitutable">
 		<!--<List id="ProductList" items="{/ProductCollection}" mode="SingleSelect" includeItemInSelection="true">-->
 		<!--	<StandardListItem title="{Name}" description="{ProductId}" icon="{ProductPicUrl}" iconDensityAware="false" iconInset="false"/>-->
 		<!--</List>-->
