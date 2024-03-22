@@ -46,7 +46,7 @@
 			"viewName": "giconfirmation.giconfirmation.view.App",
 			"type": "XML",
 			"async": true,
-			"id": "App"
+			"id": "idAppControl"
 		},
 		"dependencies": {
 			"minUI5Version": "1.60.1",

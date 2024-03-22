@@ -6,7 +6,7 @@ sap.ui.define([
   "../model/formatter",
   "sap/m/MessageBox",
   "sap/ui/core/Fragment"
-], function (Controller, ValueState, Filter, JSONModel, formatter, MessageBox,Fragment) {
+], function (Controller, ValueState, Filter, JSONModel, formatter, MessageBox, Fragment) {
   "use strict";
 
   return Controller.extend("giconfirmation.giconfirmation.controller.Master", {
@@ -21,6 +21,7 @@ sap.ui.define([
      */
     formatter: formatter,
     onInit: function () {
+      debugger
       this.oDataManager = this.getOwnerComponent().getDataManager();
       this._oModel = this.getOwnerComponent().getModel();
       this.getView().setModel(this._oModel);
@@ -28,9 +29,19 @@ sap.ui.define([
       this._pickListData = [];
       this._pickListPopUpData = [];
       this.lastSelectedBarcode = "";
+
+      if (this.dialog) { this.dialog.destroy(true); }
       this.dialog = sap.ui.xmlfragment("giconfirmation.giconfirmation.view.initSelection", this);
+      this.getView().addDependent(this.dialog);
+
+      if (this.dialogSel2) { this.dialogSel2.destroy(true); }
       this.dialogSel2 = sap.ui.xmlfragment("giconfirmation.giconfirmation.view.initSelection2", this);
+      this.getView().addDependent(this.dialogSel2);
+
+      if (this.subsitute_dialog) { this.subsitute_dialog.destroy(true); }
       this.subsitute_dialog = sap.ui.xmlfragment("giconfirmation.giconfirmation.view.substituleListPopUp", this);
+      this.getView().addDependent(this.subsitute_dialog);
+
       // this.postButton = sap.ui.getCore().byId("btn_Confirm");
 
       sap.ui.getCore().byId("PlantInput").setValueState("Error");
@@ -39,7 +50,7 @@ sap.ui.define([
       // sap.ui.getCore().byId("btn_submit").setEnabled(false);
 
       //  this._oDialog = sap.ui.xmlfragment("sap.ui.demo.wt.view.HelloDialog");
-      this.getView().addDependent(this.dialog);
+      // this.getView().addDependent(this.dialog);
       // this.dialog.open();
 
       this._plant = "";
@@ -77,7 +88,7 @@ sap.ui.define([
     },
 
     _onSaveQtyBtnPress: function (oEvent, oData, barcodeManualData) {
-      var oType = sap.ui.getCore().byId("keyDoc").getValue().substring(0,1);
+      var oType = sap.ui.getCore().byId("keyDoc").getValue().substring(0, 1);
       var i;
       for (i = 0; i < this._scannedMatData.length; i++) {
         if (this._scannedMatData[i].Barcode == barcodeManualData.BarCode) {
@@ -86,7 +97,7 @@ sap.ui.define([
         }
       }
 
-      if(oType == "2") {
+      if (oType == "2") {
         this.updateVenderQty();
       }
       this.updateRemainQty();
@@ -266,9 +277,11 @@ sap.ui.define([
     onDone: function (oEvent) {
 
       var odataBarcodeArr = [];
-
       var rbt_Mode = sap.ui.getCore().byId("RG_Mode");
       var selected_mode = rbt_Mode.getSelectedIndex();
+      var rbt_Type = sap.ui.getCore().byId("RG_Type");
+      var selected_type = rbt_Type.getSelectedIndex();
+
       var mode_needs_picklist;
       switch (selected_mode) { //Mode
         case 0:
@@ -280,8 +293,9 @@ sap.ui.define([
         default:
           mode_needs_picklist = "";
       }
-
-      if (mode_needs_picklist == "X") {
+      // selected_mode = 0 (Packing List), 1 (Delivery), 2 (Other)
+      // selected_type = 0 (Goods Issue), 1 (Goods Return) 
+      if (selected_mode == 0 && selected_type == 0) { // Packing List and Goods Issue
         var _mvmtFilter = [];
         var mvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
         var picklistinput = sap.ui.getCore().byId("keyDoc").getValue();
@@ -297,12 +311,12 @@ sap.ui.define([
         _mvmtFilter.push(nameFilterSloc);
         _mvmtFilter.push(nameFilterPlant);
 
-        if(MatDoc != '') {
+        if (MatDoc != '') {
           var nameFilterMatDoc = new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.EQ, MatDoc);
           _mvmtFilter.push(nameFilterMatDoc);
         }
 
-        if(mvmtType == "262") {
+        if (mvmtType == "262") {
           var nameFilterReason = new sap.ui.model.Filter("Reson", sap.ui.model.FilterOperator.EQ, "X");
           _mvmtFilter.push(nameFilterReason);
         }
@@ -310,13 +324,13 @@ sap.ui.define([
         this._oModel.read("/getVendorBatchQtySet", {
           filters: _mvmtFilter,
           success: function (oData, sStatus, oResponse) {
-            if(oData.length != 0) {
+            if (oData.length != 0) {
               this._oModelList = oData.results;
               this._oVenQtyList = [];
               this._oPoQtyList = [];
 
-              if(this._oModelList.length > 0) {
-                if(this._oModelList[0].Message != '') {
+              if (this._oModelList.length > 0) {
+                if (this._oModelList[0].Message != '') {
                   MessageBox.error(this._oModelList[0].Message);
                   return;
                 }
@@ -326,35 +340,35 @@ sap.ui.define([
               }
 
 
-              for(let i = 0; i < this._oModelList.length; i++) {
+              for (let i = 0; i < this._oModelList.length; i++) {
                 this._oModelList[i].Poqty = this.convertDouble(this._oModelList[i].Poqty);
                 this._oModelList[i].Venqty = this.convertDouble(this._oModelList[i].Venqty);
                 var cMatDoc = this._oModelList.filter(m => m.Matnr == this._oModelList[i].Matnr && m.Charg == this._oModelList[i].Charg);
                 var iListPoQty = {}, iListVenQty = {};
-                iListVenQty = { "Picklistno": cMatDoc[0].Picklistno, "Matnr": cMatDoc[0].Matnr, "Charg":  cMatDoc[0].Charg, "Venqty": this._oModelList[i].Venqty, "VendorBatch": this._oModelList[i].Vendbatch, "Size": cMatDoc[0].size1 };
+                iListVenQty = { "Picklistno": cMatDoc[0].Picklistno, "Matnr": cMatDoc[0].Matnr, "Charg": cMatDoc[0].Charg, "Venqty": this._oModelList[i].Venqty, "VendorBatch": this._oModelList[i].Vendbatch, "Size": cMatDoc[0].size1 };
                 this._oVenQtyList.push(iListVenQty);
-                if(this._oPoQtyList.length == 0 && cMatDoc.length > 0) {
+                if (this._oPoQtyList.length == 0 && cMatDoc.length > 0) {
                   // Sum Po Qty from filter
                   var oPoQty = cMatDoc.reduce((accumulator, object) => {
                     return accumulator + this.convertDouble(object.Poqty);
                   }, 0);
-                  iListPoQty = { "Picklistno": cMatDoc[0].Picklistno, "Matnr": cMatDoc[0].Matnr, "Charg":  cMatDoc[0].Charg, "Poqty": oPoQty,  "Size": cMatDoc[0].size1 };
+                  iListPoQty = { "Picklistno": cMatDoc[0].Picklistno, "Matnr": cMatDoc[0].Matnr, "Charg": cMatDoc[0].Charg, "Poqty": oPoQty, "Size": cMatDoc[0].size1 };
                   this._oPoQtyList.push(iListPoQty);
                 } else {
                   var cListPo = this._oPoQtyList.filter(m => m.Matnr == this._oModelList[i].Matnr && m.Charg == this._oModelList[i].Charg);
 
-                  if(cListPo.length == 0 && cMatDoc.length > 0) {
+                  if (cListPo.length == 0 && cMatDoc.length > 0) {
                     // Sum Po Qty from filter
                     var oPoQty = cMatDoc.reduce((accumulator, object) => {
                       return accumulator + this.convertDouble(object.Poqty);
                     }, 0);
-                    iListPoQty = { "Picklistno": cMatDoc[0].Picklistno, "Matnr": cMatDoc[0].Matnr, "Charg":  cMatDoc[0].Charg, "Poqty": oPoQty };
+                    iListPoQty = { "Picklistno": cMatDoc[0].Picklistno, "Matnr": cMatDoc[0].Matnr, "Charg": cMatDoc[0].Charg, "Poqty": oPoQty };
                     this._oPoQtyList.push(iListPoQty);
                   }
                 }
               }
 
-              if(this._oModelList !== undefined) {
+              if (this._oModelList !== undefined) {
                 this.getView().byId("boxMvmtReason").setVisible(false);
                 this.getView().byId("inpMvmtReason").setValue('');
                 this.dialogSel2.close();
@@ -368,7 +382,7 @@ sap.ui.define([
             MessageBox.error("An error occured while retrieving picklist data.");
           }
         });
-      } else if(this._type == "GR") {
+      } else if (selected_mode == 0 && selected_type == 1) { // Packing List and Goods Return
         var _mvmtFilter = [];
         var mvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
         var picklistinput = sap.ui.getCore().byId("keyDoc").getValue();
@@ -384,12 +398,12 @@ sap.ui.define([
         _mvmtFilter.push(nameFilterSloc);
         _mvmtFilter.push(nameFilterPlant);
 
-        if(MatDoc != '') {
+        if (MatDoc != '') {
           var nameFilterMatDoc = new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.EQ, MatDoc);
           _mvmtFilter.push(nameFilterMatDoc);
         }
 
-        if(mvmtType == "262") {
+        if (mvmtType == "262") {
           var nameFilterReason = new sap.ui.model.Filter("Reason", sap.ui.model.FilterOperator.EQ, "X");
           _mvmtFilter.push(nameFilterReason);
         }
@@ -397,12 +411,12 @@ sap.ui.define([
         this._oModel.read("/getVendorBatchQtySet", {
           filters: _mvmtFilter,
           success: function (oData, sStatus, oResponse) {
-            if(oData.length != 0) {
+            if (oData.length != 0) {
               this._oModelList = oData.results;
               this._oReturnList = [];
 
-              if(this._oModelList.length > 0) {
-                if(this._oModelList[0].Message != '') {
+              if (this._oModelList.length > 0) {
+                if (this._oModelList[0].Message != '') {
                   MessageBox.error(this._oModelList[0].Message);
                   return;
                 }
@@ -411,18 +425,20 @@ sap.ui.define([
                 return;
               }
 
-              for(let i = 0; i < this._oModelList.length; i++) {
+              for (let i = 0; i < this._oModelList.length; i++) {
                 this._oModelList[i].Poqty = this.convertDouble(this._oModelList[i].Poqty);
                 this._oModelList[i].Venqty = this.convertDouble(this._oModelList[i].Venqty);
-                var iListReturnQty = { "Barcode": this._oModelList[i].Barcodeid, "Charg": this._oModelList[i].Charg, "Matnr": this._oModelList[i].Matnr, 
-                                    "Picklistno": this._oModelList[i].Picklistno, "Plant": this._oModelList[i].Plant, "lgort": this._oModelList[i].lgort,
-                                    "Vendbatch": this._oModelList[i].Vendbatch, "Reason": this._oModelList[i].Reason, "Venqty": this._oModelList[i].Venqty,
-                                    "Size": this._oModelList[i].size1, "Unit": this._oModelList[i].Unit };
+                var iListReturnQty = {
+                  "Barcode": this._oModelList[i].Barcodeid, "Charg": this._oModelList[i].Charg, "Matnr": this._oModelList[i].Matnr,
+                  "Picklistno": this._oModelList[i].Picklistno, "Plant": this._oModelList[i].Plant, "lgort": this._oModelList[i].lgort,
+                  "Vendbatch": this._oModelList[i].Vendbatch, "Reason": this._oModelList[i].Reason, "Venqty": this._oModelList[i].Venqty,
+                  "Size": this._oModelList[i].size1, "Unit": this._oModelList[i].Unit
+                };
 
                 this._oReturnList.push(iListReturnQty);
               }
 
-              if(this._oModelList !== undefined) {
+              if (this._oModelList !== undefined) {
                 this.getView().byId("boxMvmtReason").setVisible(true);
                 this.getView().byId("inpMvmtReason").setValue(this._oReturnList[0].Reason);
                 this.dialogSel2.close();
@@ -435,8 +451,70 @@ sap.ui.define([
             MessageBox.error("An error occured while retrieving picklist data.");
           }
         });
-      }
+      } else if (selected_mode == 2 && selected_type == 0) { // Other Movements and Good Issue
+        var _mvmtFilter = [];
+        var picklistinput = sap.ui.getCore().byId("keyDoc").getValue();
+        var nameFilterPickListIn = new sap.ui.model.Filter("Picklistno", sap.ui.model.FilterOperator.EQ, picklistinput);
+        _mvmtFilter.push(nameFilterPickListIn);
 
+        this._oModel.read("/getPickListDataOnClickSet", {
+          filters: _mvmtFilter,
+          success: function (oRetrievedResult) {
+
+            this._pickListData = oRetrievedResult.results;
+
+            var promiseArr = [];
+
+            for (var j = 0; j < this._pickListData.length; j++) {
+
+              var rbtType = sap.ui.getCore().byId("RG_Type");
+              var sType = rbtType.getSelectedIndex();
+              var rbtMode = sap.ui.getCore().byId("RG_Mode");
+              var sMode = rbtMode.getSelectedIndex();
+              var picklistNumber = sap.ui.getCore().byId("keyDoc").getValue();
+
+              var promiseBarcode = new Promise(function (resolve, reject) {
+                //  if (this._pickListData[j].Bin === "CUTTING" || this._pickListData[j].Bin === "SEWING") {
+                this._oModel.read("/getBarcodeDetailsSet(Barcode='" + encodeURI(this._pickListData[j].BarcodeId) + "',Mode='" + sMode +
+                  "',DocumentNumber='" + picklistNumber + "',Type='" + sType + "')", {
+                  async: false,
+                  success: function (oRetrievedResultS) {
+                    resolve(oRetrievedResultS);
+                  }
+                }
+                );
+                //  }
+
+              }.bind(this));
+              promiseArr.push(promiseBarcode);
+            }
+
+            Promise.all(promiseArr).then(function (oresponse) {
+
+              for (var q = 0; q < oresponse.length; q++) {
+
+                const arrayFind = this._scannedMatData.find(({
+                  Barcode
+                }) => Barcode === oresponse[q].Barcode);
+                if (arrayFind == undefined) {
+                  this._scannedMatData.push(oresponse[q]);
+                }
+              }
+
+              var lst_mats = this.getView().byId("barcodeList");
+              lst_mats.getModel("data").refresh();
+
+              sap.m.MessageToast.show("Pick list data have been retrieved successfully.", {});
+            }.bind(this));
+
+          }.bind(this),
+          error: function (oError) {
+            sap.m.MessageToast.show("An error occured while retrieving picklist data.", {});
+          }
+        });
+        this.dialogSel2.close();
+      }
+      // this.dialogSel2.close();
     },
 
     convertDouble: function (sDouble) {
@@ -457,8 +535,8 @@ sap.ui.define([
 
     convertMatDoc: function (sMatDoc) {
       var oMatDoc = sMatDoc;
-      if(oMatDoc.length != 0) {
-        for(let i = oMatDoc.length; i < 18; i++) {
+      if (oMatDoc.length != 0) {
+        for (let i = oMatDoc.length; i < 18; i++) {
           oMatDoc = '0' + oMatDoc;
         }
       } else {
@@ -486,7 +564,7 @@ sap.ui.define([
       oStorage.put("scannedMatData", ListItemPressed);
       var oGiQty = this.convertDouble(ListItemPressed.GiQty.toFixed(3))
 
-      if(oMvmtType == '262') {
+      if (oMvmtType == '262') {
         oReturn = 'X';
       } else {
         oReturn = 'E';
@@ -624,6 +702,8 @@ sap.ui.define([
       // this._oModel.read("/getBarcodeDetailsSet('" + encodeURI(oEvent.getParameter("text")) + "')", {
       // this._oModel.read("/getBarcodeDetailsSet('" + encodeURI(oEvent.getParameters("text").newValue) + "')", {
 
+      // selected_mode = 0 (Packing List), 1 (Delivery), 2 (Other)
+      // selected_type = 0 (Goods Issue), 1 (Goods Return) 
       var rbtType = sap.ui.getCore().byId("RG_Type");
       var sType = rbtType.getSelectedIndex();
       var rbtMode = sap.ui.getCore().byId("RG_Mode");
@@ -642,56 +722,54 @@ sap.ui.define([
           var oMvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
 
           // Check Duplitcate Barcode
-          if(oItems.length > 0) {
-            for(let i = 0; i < oItems.length; i++) {
+          if (oItems.length > 0) {
+            for (let i = 0; i < oItems.length; i++) {
               var oItem = oItems[i].getBindingContext().getObject();
-              if(oItem.Barcode == oRetrievedResult.Barcode) {
+              if (oItem.Barcode == oRetrievedResult.Barcode) {
                 MessageBox.error("Duplitcate Barcode");
                 return;
               }
             }
           }
-          
-          if(oMvmtType == '261') {
+
+          if (sMode == 0 && sType == 0) { // Packing List and Goods Issue
             cPoList = this._oPoQtyList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch);
 
             // Check Type '1' or '2'
-            if(keyDocID.substring(0,1) == '1') {
+            if (keyDocID.substring(0, 1) == '1') {
               cMatDoc = this._oPoQtyList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch);
-            } else if(keyDocID.substring(0,1) == '2') {
+            } else if (keyDocID.substring(0, 1) == '2') {
               cMatDoc = this._oVenQtyList.filter(i => i.Matnr == oRetrievedResult.Matnr && i.Charg == oRetrievedResult.Batch && i.VendorBatch == oRetrievedResult.VendorBatch);
             }
 
-            if(cPoList.length == 0) {
+            if (cPoList.length == 0) {
               MessageBox.error("Unable to find value for this barcode.");
               return;
             }
 
             // init Value
-            // var oSize = cMatDoc[0].size1;
             var oTktQty = this.convertDouble(oRetrievedResult.Tktqty);
             var oGiQty = oTktQty;
             var oRemainQty = oTktQty - oGiQty;
-            // var oVenBatch = cMatDoc[0].VendorBatch;
             var oRemainVenBatch;
             var oRemainPoBatch = cPoList[0].Poqty;
             var oPoQty = oRemainPoBatch - oGiQty;
 
-            if(cMatDoc.length > 0) {
-              if(keyDocID.substring(0,1) == '1') {
+            if (cMatDoc.length > 0) {
+              if (keyDocID.substring(0, 1) == '1') {
                 oRemainVenBatch = 0
-                if(oRemainPoBatch < oTktQty) {
+                if (oRemainPoBatch < oTktQty) {
                   oGiQty = oRemainPoBatch;
                   oRemainQty = oTktQty - oGiQty;
                   oPoQty = oRemainPoBatch - oGiQty;
                 }
-              } else if(keyDocID.substring(0,1) == '2') {
+              } else if (keyDocID.substring(0, 1) == '2') {
                 var oVenQty = cMatDoc[0].Venqty;
-                if(oVenQty > oRemainPoBatch) {
+                if (oVenQty > oRemainPoBatch) {
                   oVenQty = oRemainPoBatch;
                 }
                 oRemainVenBatch = oVenQty;
-                if(oRemainVenBatch < oTktQty && oRemainVenBatch <= oRemainPoBatch && oVenQty >= 0)  {
+                if (oRemainVenBatch < oTktQty && oRemainVenBatch <= oRemainPoBatch && oVenQty >= 0) {
                   oGiQty = oRemainVenBatch;
                   oRemainVenBatch = cMatDoc[0].Venqty - oGiQty;
                   oRemainQty = oTktQty - oGiQty;
@@ -701,8 +779,7 @@ sap.ui.define([
                 }
               }
 
-              if(oRemainPoBatch != 0) {
-                // oRetrievedResult.Size = oSize;
+              if (oRemainPoBatch != 0) {
                 oRetrievedResult.TktQty = oTktQty;
                 oRetrievedResult.GiQty = oGiQty;
                 oRetrievedResult.RemainQty = oRemainQty;
@@ -716,14 +793,14 @@ sap.ui.define([
                 return;
               }
             } else {
-              if(keyDocID.substring(0,1) == '2') {
+              if (keyDocID.substring(0, 1) == '2') {
                 this._BarcodeTemp = oRetrievedResult;
 
-                if(this._ReasonDialog) {
+                if (this._ReasonDialog) {
                   this._ReasonDialog.destroy(true);
                 }
 
-                this._ReasonDialog = sap.ui.xmlfragment("rDialog","giconfirmation.giconfirmation.view.reasonDialog", this);
+                this._ReasonDialog = sap.ui.xmlfragment("rDialog", "giconfirmation.giconfirmation.view.reasonDialog", this);
                 this.getView().addDependent(this._ReasonDialog);
 
                 var selectedBwart = sap.ui.getCore().byId("mvmtType").getSelectedKey();
@@ -760,10 +837,10 @@ sap.ui.define([
                 return;
               }
             }
-          } else if (oMvmtType == '262') {
+          } else if (sMode == 0 && sType == 1) { // Packing List and Goods Return
             cReturnList = this._oReturnList.filter(o => o.Barcode == oRetrievedResult.Barcode);
 
-            if(cReturnList.length > 0) {
+            if (cReturnList.length > 0) {
               let oReTktQty = this.convertDouble(oRetrievedResult.TktQty);
               let oReGiQty = cReturnList[0].Venqty;
               let oReRemainQty = oReTktQty - oReGiQty;
@@ -878,22 +955,22 @@ sap.ui.define([
             sap.m.MessageToast.show(oRetrievedResult.Message.toString(), {});
           }
 
-          if(this._oPoQtyList) {
+          if (this._oPoQtyList) {
             var checkPoqty = true;
-            for(let i = 0; i < this._oPoQtyList.length; i++) {
-              if(this._oPoQtyList[i].Poqty != 0) {
+            for (let i = 0; i < this._oPoQtyList.length; i++) {
+              if (this._oPoQtyList[i].Poqty != 0) {
                 checkPoqty = false;
               }
             }
 
-            if(checkPoqty) {
+            if (checkPoqty) {
               MessageBox.success("Complete Pick List");
             }
           }
 
-          if(this._oReturnList) {
+          if (this._oReturnList) {
             cReturnList = this._oReturnList.filter(o => o.Return != 'X');
-            if(cReturnList.length == 0) {
+            if (cReturnList.length == 0) {
               MessageBox.success("Complete Pick List");
             }
           }
@@ -927,13 +1004,13 @@ sap.ui.define([
     updateReason: function (oEvent) {
       sap.ui.core.Fragment.byId("rDialog", "mReasonList").setValueState("None");
 
-      if(this._BarcodeTemp) {
+      if (this._BarcodeTemp) {
         sap.ui.core.Fragment.byId("rDialog", "btn_Submit").setEnabled(true);
       }
     },
 
     onReasonSubmit: function (oEvent) {
-      if(this._BarcodeTemp) {
+      if (this._BarcodeTemp) {
         var tBarcode = this._BarcodeTemp
         var cPoList = this._oPoQtyList.filter(i => i.Matnr == tBarcode.Matnr && i.Charg == tBarcode.Batch);
         var oTktQty = this.convertDouble(tBarcode.Tktqty);
@@ -942,9 +1019,9 @@ sap.ui.define([
         var oRemainPoBatch = cPoList[0].Poqty;
         var oPoQty = oRemainPoBatch - oGiQty;
 
-        if(oRemainPoBatch >= 0) {
+        if (oRemainPoBatch >= 0) {
           tBarcode.TktQty = oTktQty;
-          if(oTktQty > oRemainPoBatch) {
+          if (oTktQty > oRemainPoBatch) {
             tBarcode.GiQty = oRemainPoBatch;
             oGiQty = oRemainPoBatch;
           } else {
@@ -964,15 +1041,15 @@ sap.ui.define([
 
           this.onReasonCancel();
 
-          if(this._oPoQtyList) {
+          if (this._oPoQtyList) {
             var checkPoqty = true;
-            for(let i = 0; i < this._oPoQtyList.length; i++) {
-              if(this._oPoQtyList[i].Poqty != 0) {
+            for (let i = 0; i < this._oPoQtyList.length; i++) {
+              if (this._oPoQtyList[i].Poqty != 0) {
                 checkPoqty = false;
               }
             }
 
-            if(checkPoqty) {
+            if (checkPoqty) {
               MessageBox.success("Complete Pick List")
             }
           }
@@ -1053,9 +1130,14 @@ sap.ui.define([
       //var oList = oEvent.getSource(),
       //  oItem = oEvent.getParameter("listItem"),
       //  sPath = oItem.getBindingContext().getPath();
+      // Validations --- start
+      var rbt_Type = sap.ui.getCore().byId("RG_Type");
+      var selected_type = rbt_Type.getSelectedIndex();
+      var rbt_Mode = sap.ui.getCore().byId("RG_Mode");
+      var selected_mode = rbt_Mode.getSelectedIndex();
 
       //this._scannedMatData.splice(sPath, 1);
-      var oType = sap.ui.getCore().byId("keyDoc").getValue().substring(0,1);
+      var oType = sap.ui.getCore().byId("keyDoc").getValue().substring(0, 1);
       var oMvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
       var oList = oEvent.getSource();
       var oContext = oEvent.getParameter("listItem").getBindingContext();
@@ -1073,12 +1155,12 @@ sap.ui.define([
       var removed = data.splice(oIndex, 1);
       m.setProperty("/", data);
 
-      if(oMvmtType == '261') {
-        if(oType == "2") {
+      if (selected_mode == 0 && selected_type == 0) {
+        if (oType == "2") {
           this.updateVenderQty();
         }
         this.updateRemainQty();
-      } else if(oMvmtType == '262') {
+      } else if (selected_mode == 0 && selected_type == 1) {
         this.updateReturnQty(oBarcode);
       }
 
@@ -1090,7 +1172,7 @@ sap.ui.define([
       var oReturnList = this._oReturnList;
       var cReturnBarcode = oReturnList.filter(o => o.Barcode == iBarcode);
 
-      if(cReturnBarcode.length > 0) {
+      if (cReturnBarcode.length > 0) {
         cReturnBarcode[0].Return = '';
       }
     },
@@ -1101,21 +1183,21 @@ sap.ui.define([
       var oTable = this.getView().byId("barcodeList");
       var oItems = oTable.getItems();
 
-      if(oVenderList.length > 0 && oModelList.length > 0) {
-        for(let i = 0; i < oVenderList.length; i++) {
+      if (oVenderList.length > 0 && oModelList.length > 0) {
+        for (let i = 0; i < oVenderList.length; i++) {
           var cMatDoc = oModelList.filter(o => o.Matnr == oVenderList[i].Matnr && o.Charg == oVenderList[i].Charg && o.Vendbatch == oVenderList[i].VendorBatch);
-          if(cMatDoc.length > 0) {
+          if (cMatDoc.length > 0) {
             oVenderList[i].Venqty = cMatDoc[0].Venqty;
           }
         }
       }
 
-      if(oItems.length > 0) {
-        for(let i = oItems.length - 1; i >= 0; i--) {
+      if (oItems.length > 0) {
+        for (let i = oItems.length - 1; i >= 0; i--) {
           var oItem = oItems[i].getBindingContext().getObject();
           var cVenderList = oVenderList.filter(o => o.Matnr == oItem.Matnr && o.Charg == oItem.Batch && o.VendorBatch == oItem.VendorBatch);
-          
-          if(cVenderList.length > 0) {
+
+          if (cVenderList.length > 0) {
             var cVenderQty = cVenderList[0].Venqty;
             var oGiQty = oItem.GiQty;
 
@@ -1134,10 +1216,10 @@ sap.ui.define([
       var oTable = this.getView().byId("barcodeList");
       var oItems = oTable.getItems();
 
-      if(oPoList.length > 0 && oModelList.length > 0) {
-        for(let i = 0; i < oPoList.length; i++) {
+      if (oPoList.length > 0 && oModelList.length > 0) {
+        for (let i = 0; i < oPoList.length; i++) {
           var cMatDoc = oModelList.filter(o => o.Matnr == oPoList[i].Matnr && o.Charg == oPoList[i].Charg);
-          if(cMatDoc.length > 0) {
+          if (cMatDoc.length > 0) {
             // Sum Po Qty from filter
             var oPoQty = cMatDoc.reduce((accumulator, object) => {
               return accumulator + this.convertDouble(object.Poqty);
@@ -1148,12 +1230,12 @@ sap.ui.define([
         }
       }
 
-      if(oItems.length > 0) {
-        for(let i = oItems.length - 1; i >= 0; i--) {
+      if (oItems.length > 0) {
+        for (let i = oItems.length - 1; i >= 0; i--) {
           var oItem = oItems[i].getBindingContext().getObject();
           var cPoList = oPoList.filter(o => o.Matnr == oItem.Matnr && o.Charg == oItem.Batch);
-          
-          if(cPoList.length > 0) {
+
+          if (cPoList.length > 0) {
             var cPoQty = cPoList[0].Poqty;
             var oGiQty = oItem.GiQty;
             var oRemainQty = oItem.TktQty - oGiQty
@@ -1161,7 +1243,7 @@ sap.ui.define([
             cPoList[0].Poqty = cPoQty - oGiQty;
             oItem.PoQty = cPoList[0].Poqty;
             oItem.RemainQty = oRemainQty;
-          } 
+          }
         }
       }
     },
@@ -1170,21 +1252,27 @@ sap.ui.define([
 
       var oMvmtType = sap.ui.getCore().byId("mvmtType").getSelectedKey();
 
-      if(oMvmtType == '261') {
+      // Validations --- start
+      var rbt_Type = sap.ui.getCore().byId("RG_Type");
+      var selected_type = rbt_Type.getSelectedIndex();
+      var rbt_Mode = sap.ui.getCore().byId("RG_Mode");
+      var selected_mode = rbt_Mode.getSelectedIndex();
+
+      if (selected_mode == 0 && selected_type == 0) {
         this.postOData();
-      } else if(oMvmtType == '262') {
-        if(this._ReturnDialog) {
+      } else if (selected_mode == 0 && selected_type == 1) {
+        if (this._ReturnDialog) {
           this._ReturnDialog.destroy(true);
         }
 
-        this._ReturnDialog = sap.ui.xmlfragment("reDialog","giconfirmation.giconfirmation.view.returnDialog", this);
+        this._ReturnDialog = sap.ui.xmlfragment("reDialog", "giconfirmation.giconfirmation.view.returnDialog", this);
         this.getView().addDependent(this._ReturnDialog);
 
         var oItems = this.getView().byId("barcodeList").getItems();
         var oBarQty = oItems.length;
         var sumQty = 0;
 
-        for(let i = 0; i < oBarQty; i++) {
+        for (let i = 0; i < oBarQty; i++) {
           var oItem = oItems[i].getBindingContext().getObject();
           sumQty = sumQty + oItem.GiQty;
         }
@@ -1193,30 +1281,30 @@ sap.ui.define([
         sap.ui.core.Fragment.byId("reDialog", "valReturnQty").setValue(sumQty);
       }
 
-      // this.getView().byId("btn_submit").setEnabled(false);
+      this.getView().byId("btn_submit").setEnabled(false);
       this._ReturnDialog.open();
 
     },
 
-    onReturnSubmit: function() {
+    onReturnSubmit: function () {
       this.postOData();
       this._ReturnDialog.close();
     },
 
-    formatDate: function(iDate) {
+    formatDate: function (iDate) {
       var year = '' + iDate.getFullYear();
       var month = '' + (iDate.getMonth() + 1); // get Month (0-11) + 1 
       var day = '' + iDate.getDate();
 
-      if (month.length < 2) 
-          month = "0" + month;
-      if (day.length < 2) 
-          day = "0" + day;
+      if (month.length < 2)
+        month = "0" + month;
+      if (day.length < 2)
+        day = "0" + day;
 
       return day + '.' + month + '.' + year;
-  },
+    },
 
-    postOData: function() {
+    postOData: function () {
       var oDeepCreateGIData = {};
       var oDateValue = sap.ui.getCore().byId("DateInput").getDateValue();
       var sDate = this.formatDate(oDateValue);
@@ -1269,18 +1357,18 @@ sap.ui.define([
 
       // update Reason
       var listBarcode = this._scannedMatData;
-      for(let i = listBarcode.length-1; i >= 0; i --) {
+      for (let i = listBarcode.length - 1; i >= 0; i--) {
         var oItem = listBarcode[i];
-        if(oItem.Reason !== undefined) {
+        if (oItem.Reason !== undefined) {
           var filterReason = this._scannedMatData.filter(o => o.Batch == oItem.Batch && o.Matnr == oItem.Matnr && o.Reason != '' && o.Reason !== undefined);;
-          for(let j = 0; j < filterReason.length; j++) {
-                  filterReason[i].Reason = oItem.Reason;
-                }
+          for (let j = 0; j < filterReason.length; j++) {
+            filterReason[i].Reason = oItem.Reason;
+          }
         } else {
           oItem.Reason = "";
         }
       }
-      
+
       //adjust mapping
       var binItemData = [];
       for (var iIndex = 0; iIndex < this._scannedMatData.length; iIndex++) {
@@ -1312,10 +1400,10 @@ sap.ui.define([
           }
           this._scannedMatData = _scannedMatData;
           lst_mats.getModel("data").refresh();
-          
+
         }.bind(this),
-        error: function (oError) { 
-          if(!oError.responseJSON && oError.responseText){
+        error: function (oError) {
+          if (!oError.responseJSON && oError.responseText) {
             oError.responseJSON = JSON.parse(oError.responseText);
           }
           MessageBox.error(oError.responseJSON.error.message.value);
